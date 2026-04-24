@@ -1,0 +1,41 @@
+import { useEffect } from 'react';
+import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
+
+// material-ui
+import Alert from '@mui/material/Alert';
+
+import { trackAppError } from 'analytics/mixpanel';
+
+// ==============================|| ELEMENT ERROR - COMMON ||============================== //
+
+export default function ErrorBoundary() {
+  const error = useRouteError();
+
+  useEffect(() => {
+    const message = error instanceof Error ? error.message : isRouteErrorResponse(error) ? `HTTP ${error.status}` : String(error);
+    trackAppError({
+      message,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }, [error]);
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) {
+      return <Alert color="error">Error 404 - This page doesn&apos;t exist!</Alert>;
+    }
+
+    if (error.status === 401) {
+      return <Alert color="error">Error 401 - You aren&apos;t authorized to see this</Alert>;
+    }
+
+    if (error.status === 503) {
+      return <Alert color="error">Error 503 - Looks like our API is down</Alert>;
+    }
+
+    if (error.status === 418) {
+      return <Alert color="error">Error 418 - Contact administrator</Alert>;
+    }
+  }
+
+  return <Alert color="error">Under Maintenance</Alert>;
+}

@@ -1,0 +1,27 @@
+# Static SPA only. Build args are Vite (baked at `docker compose build`); no server env at runtime.
+
+services:
+  zeta-re-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_TITLE: ${VITE_TITLE:-ZetaRe}
+        VITE_COMPANY_NAME: ${VITE_COMPANY_NAME:-}
+        VITE_SUPPORT_EMAIL: ${VITE_SUPPORT_EMAIL:-}
+        VITE_VERSION: ${VITE_VERSION:-}
+        VITE_MANIFEST_DESCRIPTION: ${VITE_MANIFEST_DESCRIPTION:-}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+        VITE_OIDC_LOGIN_URL: ${VITE_OIDC_LOGIN_URL:-}
+        VITE_OIDC_ISSUER: ${VITE_OIDC_ISSUER:-}
+        VITE_OIDC_CLIENT_ID: ${VITE_OIDC_CLIENT_ID:-}
+        VITE_OIDC_REDIRECT_URI: ${VITE_OIDC_REDIRECT_URI:-}
+        VITE_OIDC_END_SESSION_URL: ${VITE_OIDC_END_SESSION_URL:-}
+        VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
+        VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-}
+    image: zeta-re-frontend:latest
+    container_name: zeta-re-frontend
+    ports:
+      - "8080:80"
