@@ -16,7 +16,7 @@ import IconButton from 'components/@extended/IconButton';
 
 import useConfig from 'hooks/useConfig';
 import { handlerDrawerOpen, useGetMenuMaster } from 'lib/menuState';
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH, MenuOrientation, ThemeMode } from 'config';
+import { MINI_DRAWER_WIDTH, MenuOrientation, ThemeMode } from 'config';
 
 // assets
 import { ArrowLeft2, HambergerMenu } from 'iconsax-react';
@@ -65,7 +65,7 @@ export default function Header({ hideDrawerToggle, showMobileBackButton, mobileB
         >
           <ArrowLeft2 />
         </IconButton>
-      ) : !isHorizontal && !hideDrawerToggle ? (
+      ) : !isHorizontal && !hideDrawerToggle && downLG ? (
         <IconButton
           aria-label="open drawer"
           onClick={() => handlerDrawerOpen(!drawerOpen)}
@@ -95,14 +95,14 @@ export default function Header({ hideDrawerToggle, showMobileBackButton, mobileB
       width:
         !hasDrawer || isHorizontal
           ? '100%'
-          : { xs: '100%', lg: drawerOpen ? `calc(100% - ${DRAWER_WIDTH}px)` : `calc(100% - ${MINI_DRAWER_WIDTH}px)` }
+          : { xs: '100%', lg: `calc(100% - ${MINI_DRAWER_WIDTH}px)` }
     }
   };
 
   return (
     <>
       {!downLG ? (
-        <AppBarStyled open={drawerOpen} {...appBar}>
+        <AppBarStyled open={false} {...appBar}>
           {mainHeader}
         </AppBarStyled>
       ) : (

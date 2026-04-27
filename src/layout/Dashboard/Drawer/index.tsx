@@ -9,7 +9,6 @@ import Drawer from '@mui/material/Drawer';
 // project-imports
 import DrawerHeader from './DrawerHeader';
 import DrawerContent from './DrawerContent';
-import NavUser from './DrawerContent/NavUser';
 import MiniDrawerStyled from './MiniDrawerStyled';
 
 import { DRAWER_WIDTH } from 'config';
@@ -26,9 +25,8 @@ const drawerStackSx = {
   overflow: 'hidden'
 };
 
-const logoSectionSx = { flex: '0 0 12.5%', minHeight: 0 };
+const logoSectionSx = { flex: '0 0 auto', minHeight: 0 };
 const contentSectionSx = { flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' };
-const userSectionSx = { flex: '0 0 10%', minHeight: 0 };
 
 // ==============================|| MAIN LAYOUT - DRAWER ||============================== //
 
@@ -42,8 +40,11 @@ export default function MainDrawer({ window: windowProp }: Props) {
   // responsive drawer container
   const container = windowProp !== undefined ? () => windowProp().document.body : undefined;
 
-  // header content
-  const drawerHeader = useMemo(() => <DrawerHeader open={drawerOpen} />, [drawerOpen]);
+  // Desktop sidebar is always compact (mini); mobile overlay uses expanded header when open.
+  const drawerHeader = useMemo(
+    () => <DrawerHeader open={downLG ? drawerOpen : false} />,
+    [downLG, drawerOpen]
+  );
 
   // On mobile use native overflow (SimpleBar's MobileView can be flaky); on desktop use SimpleBar
   const drawerContent = useMemo(() => <DrawerContent useNativeScroll={downLG} />, [downLG]);
@@ -52,18 +53,13 @@ export default function MainDrawer({ window: windowProp }: Props) {
     <Box sx={drawerStackSx}>
       <Box sx={logoSectionSx}>{drawerHeader}</Box>
       <Box sx={contentSectionSx}>{drawerContent}</Box>
-      {!downLG && (
-        <Box sx={userSectionSx}>
-          <NavUser />
-        </Box>
-      )}
     </Box>
   );
 
   return (
     <Box component="nav" sx={{ flexShrink: { md: 0 }, zIndex: 1200 }} aria-label="mailbox folders">
       {!downLG ? (
-        <MiniDrawerStyled variant="permanent" open={drawerOpen}>
+        <MiniDrawerStyled variant="permanent" open={false}>
           {drawerBody}
         </MiniDrawerStyled>
       ) : (

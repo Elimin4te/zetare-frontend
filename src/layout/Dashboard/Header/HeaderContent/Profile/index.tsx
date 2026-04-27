@@ -22,7 +22,6 @@ import IconButton from 'components/@extended/IconButton';
 
 import { ThemeMode } from 'config';
 import useAuth from 'hooks/useAuth';
-import { getCompanyName } from 'constants/branding';
 
 // assets
 import { Logout } from 'iconsax-react';
@@ -115,9 +114,11 @@ export default function ProfilePage() {
                           <UserAvatar alt="profile user" />
                           <Stack>
                             <Typography variant="subtitle1">{displayName}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {user?.title || user?.department || user?.email || getCompanyName()}
-                            </Typography>
+                            {user?.groups?.[0] ? (
+                              <Typography variant="body2" color="text.secondary">
+                                {user.groups[0]}
+                              </Typography>
+                            ) : null}
                           </Stack>
                         </Stack>
                       </Grid>

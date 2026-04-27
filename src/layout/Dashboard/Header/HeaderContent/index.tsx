@@ -10,8 +10,6 @@ import Profile from './Profile';
 import Localization from './Localization';
 import ThemeModeToggle from './ThemeModeToggle';
 import Notification from './Notification';
-import MegaMenuSection from './MegaMenuSection';
-import FullScreen from './FullScreen';
 
 import { MenuOrientation } from 'config';
 import useConfig from 'hooks/useConfig';
@@ -34,7 +32,6 @@ export default function HeaderContent() {
         {localization}
         <ThemeModeToggle />
         <Notification />
-        {!downLG && <FullScreen />}
         <Profile />
       </Box>
     </>

@@ -18,7 +18,7 @@ import Breadcrumbs from 'components/@extended/Breadcrumbs';
 import PageTitle from 'components/PageTitle';
 import AuthGuard from 'utils/route-guard/AuthGuard';
 
-import { DRAWER_WIDTH, MenuOrientation } from 'config';
+import { MINI_DRAWER_WIDTH, MenuOrientation } from 'config';
 import { useRouteLayoutHandle } from 'hooks/useRouteLayoutHandle';
 import { useFirstAvailableRoute } from 'hooks/useFirstAvailableRoute';
 import useConfig from 'hooks/useConfig';
@@ -30,23 +30,21 @@ export default function MainLayout() {
   const theme = useTheme();
 
   const { menuMasterLoading } = useGetMenuMaster();
-  const downXL = useMediaQuery(theme.breakpoints.down('xl'));
   const downLG = useMediaQuery(theme.breakpoints.down('lg'));
 
-  const { container, miniDrawer, menuOrientation } = useConfig();
+  const { container, menuOrientation } = useConfig();
   const routeLayout = useRouteLayoutHandle();
   const firstAvailableRoute = useFirstAvailableRoute();
 
   const isHorizontal = menuOrientation === MenuOrientation.HORIZONTAL && !downLG;
   const isSalesMobileLayout = false;
 
-  // set media wise responsive drawer
+  // Desktop sidebar stays compact; clear overlay state when leaving mobile breakpoints.
   useEffect(() => {
-    if (!miniDrawer) {
-      handlerDrawerOpen(!downXL);
+    if (!downLG) {
+      handlerDrawerOpen(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downXL]);
+  }, [downLG]);
 
   if (menuMasterLoading) return <Loader />;
 
@@ -65,7 +63,8 @@ export default function MainLayout() {
         <Box
           component="main"
           sx={{
-            width: !isHorizontal && !isSalesMobileLayout ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%',
+            width:
+              !isHorizontal && !isSalesMobileLayout ? `calc(100% - ${MINI_DRAWER_WIDTH}px)` : '100%',
             flexGrow: 1,
             p: { xs: 2, md: 3 },
             pb: isSalesMobileLayout && routeLayout.showDrawerOrNavbar ? 8 : { xs: 2, md: 3 }

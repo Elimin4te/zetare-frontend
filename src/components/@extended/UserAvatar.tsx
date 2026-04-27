@@ -6,7 +6,7 @@ import { SxProps, Theme } from '@mui/material/styles';
 // project-imports
 import Avatar from 'components/@extended/Avatar';
 import useAuth from 'hooks/useAuth';
-import { getUserInitials } from 'utils/getUserInitials';
+import { getInitialsFromDisplayName, getUserInitials } from 'utils/getUserInitials';
 
 // types
 import { UserProfile } from 'types/auth';
@@ -24,11 +24,11 @@ export default function UserAvatar({ user, size, sx, alt }: UserAvatarProps) {
   const { user: authUser } = useAuth();
   const currentUser = user || authUser;
 
-  // Get user initials for default avatar
-  const initials = useMemo(
-    () => getUserInitials(currentUser?.firstName, currentUser?.lastName),
-    [currentUser?.firstName, currentUser?.lastName]
-  );
+  const initials = useMemo(() => {
+    const fromDisplay = getInitialsFromDisplayName(currentUser?.displayName);
+    if (fromDisplay) return fromDisplay;
+    return getUserInitials(currentUser?.firstName, currentUser?.lastName);
+  }, [currentUser?.displayName, currentUser?.firstName, currentUser?.lastName]);
   const hasAvatar = !!currentUser?.avatar;
   const hasInitials = !!initials;
 
