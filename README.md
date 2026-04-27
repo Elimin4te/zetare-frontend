@@ -1,21 +1,22 @@
 # ZetaRe frontend
 
-- **Dev:** `bun install` then `bun run dev` (Vite SPA only; no in-repo backend).
-- **Config:** Vite and browser-facing values live in `src/config/appConfig.ts`. Common names: `VITE_TITLE`, `VITE_BASE_PATH`, `VITE_OIDC_*`, `VITE_SUPABASE_*` (see `src/vite-env.d.ts` for the full set). Identity is **Authentik** (OIDC) in the browser; the app maps JWT claims to `UserProfile` (see `src/lib/authentikUser.ts` and `src/contexts/JWTContext.tsx`).
-- **Data:** **Supabase** from the app’s perspective: `src/lib/supabase/` after setting `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- **Dev:** `bun install` then `bun run dev` (Vite SPA; **no in-repo API server**).
+- **Config:** Vite and browser values use `VITE_*` in `.env` (baked at `build`). See `src/config/appConfig.ts` and `src/vite-env.d.ts`. Identity: **Authentik** (OIDC); profiles from JWT in `src/lib/authentikUser.ts` and `src/contexts/JWTContext.tsx`.
+- **Data:** **Supabase** with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under `src/lib/supabase/`.
+
+**OIDC token exchange:** confidential clients must not use a browser-only token step. A separate **OIDC BFF** service (e.g. `https://oidc-bff.flordearagua.com`) runs the `code → token` exchange. This repository is only the static app; the BFF is a separate container/repo. `VITE_OIDC_BFF_URL` (and `VITE_OIDC_BFF_CLIENT_KEY` if your BFF YAML has multiple clients) are in `appConfig` for the SPA to call the BFF. CORS is handled on the BFF, not on Nginx in front of the IdP.
 
 ## Docker (on-prem)
 
-Service name / image: **`zeta-re-frontend`**. The image is **nginx** serving the static `dist/` build. There is **no** Bun or Hono BFF in the container.
+Service name / image: **`zeta-re-frontend`**: **nginx** serves `dist/`. The image has **no** application server—only static files.
 
 ```bash
-# Build: pass Vite args from your .env; see `docker-compose.yml` `build.args`
 docker compose build
-
 docker compose up -d
-# App: http://127.0.0.1:8080  (or map host:container as you like)
+# e.g. http://127.0.0.1:8080 (see `docker-compose.yml` for port)
+
 ```
 
-OIDC and Supabase settings are **build-time** `VITE_*` values (baked into the static bundle), not a separate server runtime. Configure your IdP redirect URI to match the SPA (e.g. `/callback` or whatever you set in `VITE_OIDC_REDIRECT_URI`).
+Pass build-time `VITE_*` via your `.env` and `docker-compose.yml` `build.args` (or CI). `VITE_OIDC_REDIRECT_URI` in Authentik must match the SPA callback (e.g. `https://…/auth/callback`). **Logout** is **local to this app** only (`removeUser` + redirect to `/login`); it does not call Authentik end-session, so SSO sessions for other apps stay signed in.
 
-Adjust the published port in `docker-compose.yml` if you need something other than `8080:80`.
+Override the port in `docker-compose.yml` if you need something other than `8080:80`.

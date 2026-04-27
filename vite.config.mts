@@ -34,23 +34,6 @@ export default defineConfig(({ mode }) => {
     define: {
       global: 'window'
     },
-    resolve: {
-      alias: [
-        // { find: '', replacement: path.resolve(__dirname, 'src') },
-        // {
-        //   find: /^~(.+)/,
-        //   replacement: path.join(process.cwd(), 'node_modules/$1')
-        // },
-        // {
-        //   find: /^src(.+)/,
-        //   replacement: path.join(process.cwd(), 'src/$1')
-        // }
-        // {
-        //   find: 'assets',
-        //   replacement: path.join(process.cwd(), 'src/assets')
-        // },
-      ]
-    },
     base: API_URL,
     plugins: [
       react(),

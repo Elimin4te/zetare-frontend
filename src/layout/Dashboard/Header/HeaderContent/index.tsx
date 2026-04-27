@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 // project-imports
 import Profile from './Profile';
 import Localization from './Localization';
+import ThemeModeToggle from './ThemeModeToggle';
 import Notification from './Notification';
 import MegaMenuSection from './MegaMenuSection';
 import FullScreen from './FullScreen';
@@ -31,6 +32,7 @@ export default function HeaderContent() {
       {menuOrientation === MenuOrientation.HORIZONTAL && !downLG && <DrawerHeader open={true} />}
       <Box sx={{ ml: 'auto', display: 'flex' }}>
         {localization}
+        <ThemeModeToggle />
         <Notification />
         {!downLG && <FullScreen />}
         <Profile />

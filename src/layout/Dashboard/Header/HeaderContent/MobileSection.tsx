@@ -13,6 +13,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Search from './Search';
 import Profile from './Profile';
 import Localization from './Localization';
+import ThemeModeToggle from './ThemeModeToggle';
 import IconButton from 'components/@extended/IconButton';
 import Transitions from 'components/@extended/Transitions';
 import { ThemeMode } from 'config';
@@ -87,6 +88,7 @@ export default function MobileSection() {
                   <Toolbar>
                     <Search />
                     <Localization />
+                    <ThemeModeToggle />
                     <Profile />
                   </Toolbar>
                 </AppBar>

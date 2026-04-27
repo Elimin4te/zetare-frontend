@@ -39,7 +39,7 @@ function ConfigProvider({ children }: ConfigProviderProps) {
     if (i18nMigrated.current) return;
     if (config.i18n === 'en' || config.i18n === 'es') return;
     i18nMigrated.current = true;
-    setConfig((c) => ({ ...c, i18n: 'es' }));
+    setConfig((c: CustomizationProps) => ({ ...c, i18n: 'es' }));
   }, [config.i18n, setConfig]);
 
   const onChangeContainer = () => {

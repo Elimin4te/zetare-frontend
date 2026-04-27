@@ -7,25 +7,29 @@ import MainCard, { MainCardProps } from 'components/MainCard';
 
 // ==============================|| AUTHENTICATION - CARD ||============================== //
 
+/**
+ * Rounded "pill" card: large radius, light surface (matches landing-style sign-in UIs).
+ */
 export default function AuthCard({ children, ...other }: MainCardProps) {
   const theme = useTheme();
 
   return (
     <MainCard
+      boxShadow
+      border={false}
       sx={{
-        maxWidth: { xs: 400, md: 480 },
-        margin: { xs: 2, md: 1 },
-        bgcolor: alpha(theme.palette.background.paper, 0.75), // 75% opacity to show vortex through
-        backdropFilter: 'blur(10px)', // Optional: adds a subtle blur effect
-        '& > *': {
-          flexGrow: 1,
-          flexBasis: '50%'
-        }
+        maxWidth: { xs: 440, md: 500 },
+        margin: { xs: 0, sm: 0 },
+        width: '100%',
+        borderRadius: { xs: 5, sm: 6, md: 7 },
+        bgcolor: theme.palette.background.paper,
+        boxShadow: theme.customShadows?.z1 ?? '0 8px 32px rgba(0,0,0,0.08)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.4)}`
       }}
       content={false}
       {...other}
     >
-      <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>{children}</Box>
+      <Box sx={{ p: { xs: 3, sm: 3.5, md: 4, lg: 4.5 } }}>{children}</Box>
     </MainCard>
   );
 }

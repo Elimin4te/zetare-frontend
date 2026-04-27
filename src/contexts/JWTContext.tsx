@@ -1,101 +1,112 @@
-import React, { createContext, useEffect, useReducer } from 'react';
-
-// reducer
-import { LOGIN, LOGOUT } from 'contexts/auth-reducer/actions';
-import authReducer from 'contexts/auth-reducer/auth';
+import React, { createContext, useEffect, useRef } from 'react';
+import { useAuth as useOidcAuth } from 'react-oidc-context';
+import { User as OidcUser } from 'oidc-client-ts';
 
 import { identifyUser, resetAnalytics, trackUserLogin, trackUserLogout } from 'analytics/mixpanel';
 import Loader from 'components/Loader';
-import { isOidcClientConfigured, appConfig } from 'config/appConfig';
-import {
-  getStoredAccessToken,
-  isTokenExpired,
-  setStoredAccessToken,
-  userProfileFromAccessToken
-} from 'lib/authentikUser';
-import { AuthProps, JWTContextType, UserProfile } from 'types/auth';
-
-const initialState: AuthProps = {
-  isLoggedIn: false,
-  isInitialized: false,
-  user: null
-};
+import { isOidcClientConfigured } from 'config/appConfig';
+import { isTokenExpired, setStoredAccessToken, userProfileFromAccessToken } from 'lib/authentikUser';
+import { OidcReturnState, oidcAppUrl } from 'lib/oidcPaths';
+import { JWTContextType, UserProfile } from 'types/auth';
 
 const JWTContext = createContext<JWTContextType | null>(null);
 
-export const JWTProvider = ({ children }: { children: React.ReactElement }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+function oidcToProfile(user: OidcUser | null | undefined): UserProfile | null {
+  if (!user?.access_token) {
+    return null;
+  }
+  if (isTokenExpired(user.access_token)) {
+    return null;
+  }
+  try {
+    return userProfileFromAccessToken(user.access_token);
+  } catch {
+    return null;
+  }
+}
+
+/** Renders when OIDC env is missing. */
+const StaticModeProvider = ({ children }: { children: React.ReactElement }) => {
+  const value: JWTContextType = {
+    isLoggedIn: false,
+    isInitialized: true,
+    user: null,
+    startOidcLogin: () => {},
+    logout: () => {},
+    updateProfile: () => {}
+  };
+  return <JWTContext.Provider value={value}>{children}</JWTContext.Provider>;
+};
+
+/** Renders when wrapped by react-oidc `AuthProvider`. */
+const OidcModeProvider = ({ children }: { children: React.ReactElement }) => {
+  const oidc = useOidcAuth();
+  const { isLoading, user: oidcUser, signinRedirect, removeUser } = oidc;
+  const lastTrackedToken = useRef<string | null>(null);
 
   useEffect(() => {
-    const run = () => {
-      const token = getStoredAccessToken();
-      if (token && !isTokenExpired(token)) {
-        try {
-          const user: UserProfile = userProfileFromAccessToken(token);
-          setStoredAccessToken(token);
-          identifyUser(user);
-          trackUserLogin({ method: 'authentik_jwt' });
-          dispatch({ type: LOGIN, payload: { isLoggedIn: true, isInitialized: true, user } });
-        } catch (e) {
-          console.error(e);
-          setStoredAccessToken(null);
-          dispatch({ type: LOGOUT });
-        }
-      } else {
-        if (token) {
-          setStoredAccessToken(null);
-        }
-        dispatch({ type: LOGOUT });
+    if (isLoading) {
+      return;
+    }
+    const u = oidcToProfile(oidcUser);
+    if (u && oidcUser?.access_token) {
+      setStoredAccessToken(oidcUser.access_token);
+      if (lastTrackedToken.current !== oidcUser.access_token) {
+        lastTrackedToken.current = oidcUser.access_token;
+        identifyUser(u);
+        trackUserLogin({ method: 'authentik_jwt' });
       }
-    };
-    run();
-  }, []);
+    } else {
+      lastTrackedToken.current = null;
+      setStoredAccessToken(null);
+      if (oidcUser) {
+        void removeUser();
+      }
+    }
+  }, [isLoading, oidcUser, removeUser]);
 
   const startOidcLogin = (redirectTo = '/landing') => {
     const r = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
-    if (appConfig.oidcLoginUrl) {
-      const u = new URL(appConfig.oidcLoginUrl);
-      u.searchParams.set('state', btoa(unescape(encodeURIComponent(r))).replace(/=+$/, ''));
-      window.location.assign(u.toString());
-      return;
-    }
-    if (!isOidcClientConfigured()) {
-      // eslint-disable-next-line no-alert
-      alert('Set VITE_OIDC_LOGIN_URL, or VITE_OIDC_ISSUER + VITE_OIDC_CLIENT_ID + VITE_OIDC_REDIRECT_URI. See .env.example.');
-      return;
-    }
-    const issuer = appConfig.oidcIssuer!.replace(/\/$/, '');
-    const p = new URLSearchParams({
-      client_id: appConfig.oidcClientId!,
-      redirect_uri: appConfig.oidcRedirectUri!,
-      response_type: 'code',
-      scope: 'openid profile email',
-      state: btoa(unescape(encodeURIComponent(r))).replace(/=+$/, '')
-    });
-    window.location.assign(`${issuer}/application/o/authorize/?${p.toString()}`);
+    const st: OidcReturnState = { returnPath: r };
+    void signinRedirect({ state: st });
   };
 
+  /** Clears this app’s OIDC session only (UserManager storage); does not call Authentik end-session / SSO logout. */
   const logout = () => {
     trackUserLogout();
     resetAnalytics();
     setStoredAccessToken(null);
-    dispatch({ type: LOGOUT });
-    if (appConfig.oidcEndSessionUrl) {
-      window.location.assign(appConfig.oidcEndSessionUrl);
-    }
+    lastTrackedToken.current = null;
+    void (async () => {
+      await removeUser();
+      window.location.replace(oidcAppUrl('/login'));
+    })();
   };
 
   const updateProfile = () => {};
 
-  if (state.isInitialized === false) {
+  if (isLoading) {
     return <Loader />;
   }
 
-  return (
-    <JWTContext.Provider value={{ ...state, startOidcLogin, logout, updateProfile }}>
-      {children}
-    </JWTContext.Provider>
-  );
+  const user = oidcToProfile(oidcUser);
+  const value: JWTContextType = {
+    isLoggedIn: Boolean(user),
+    isInitialized: true,
+    user,
+    startOidcLogin,
+    logout,
+    updateProfile
+  };
+
+  return <JWTContext.Provider value={value}>{children}</JWTContext.Provider>;
+};
+
+export const JWTProvider = ({ children }: { children: React.ReactElement }) => {
+  if (!isOidcClientConfigured()) {
+    return <StaticModeProvider>{children}</StaticModeProvider>;
+  }
+  return <OidcModeProvider>{children}</OidcModeProvider>;
 };
 
 export default JWTContext;

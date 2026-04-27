@@ -16,7 +16,7 @@ import Loadable from 'components/Loadable';
 // render - error page
 const Error404 = Loadable(lazy(() => import('pages/maintenance/error/404')));
 
-const OAuthBridge = Loadable(lazy(() => import('pages/auth/oauth-bridge')));
+const OAuthCallback = Loadable(lazy(() => import('pages/auth/oauth-callback')));
 
 // ==============================|| ROUTES RENDER ||============================== //
 
@@ -26,8 +26,8 @@ const router = createBrowserRouter(
       path: 'auth',
       children: [
         {
-          path: 'oauth-bridge',
-          element: <OAuthBridge />
+          path: 'callback',
+          element: <OAuthCallback />
         }
       ]
     },

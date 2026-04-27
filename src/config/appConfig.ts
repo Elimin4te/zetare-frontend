@@ -19,20 +19,33 @@ export const appConfig = {
   mixpanelToken: opt(e.VITE_MIXPANEL_TOKEN),
   appEnvironment: opt(e.VITE_ENVIRONMENT),
   /**
-   * Optional: full browser URL to your provider’s authorization page. If set, `startOidcLogin` uses this
-   * (with `state` for post-login redirect) instead of building from issuer + client.
+   * OpenID `issuer` (authority for oidc-client-ts). Use the exact `issuer` from
+   * .well-known/openid-configuration, e.g. `https://auth…/application/o/slug/`.
    */
-  oidcLoginUrl: opt(e.VITE_OIDC_LOGIN_URL),
-  /** Authentik (or any OIDC) base URL, no trailing slash, e.g. https://authentik.example.com */
-  oidcIssuer: opt(e.VITE_OIDC_ISSUER),
+  oidcAuthority: opt(e.VITE_OIDC_ISSUER),
   oidcClientId: opt(e.VITE_OIDC_CLIENT_ID),
   oidcRedirectUri: opt(e.VITE_OIDC_REDIRECT_URI),
-  /** OpenID end-session (optional) — e.g. Authentik end-session for your app */
-  oidcEndSessionUrl: opt(e.VITE_OIDC_END_SESSION_URL)
+  /**
+   * OIDC BFF base URL (no trailing slash) for `POST /v1/token` — confidential code exchange, server-side.
+   * Example: `https://oidc-bff.flordearagua.com`
+   */
+  oidcBffBaseUrl: opt(e.VITE_OIDC_BFF_URL),
+  /** BFF `clients` key when the BFF has multiple OAuth clients. */
+  oidcBffClientKey: opt(e.VITE_OIDC_BFF_CLIENT_KEY)
 } as const;
 
 export function isOidcClientConfigured() {
-  return Boolean(appConfig.oidcIssuer && appConfig.oidcClientId && appConfig.oidcRedirectUri);
+  return Boolean(appConfig.oidcAuthority && appConfig.oidcClientId && appConfig.oidcRedirectUri);
+}
+
+/** Set when the SPA is configured to use the external OIDC BFF for the code → token step. */
+export function isOidcBffConfigured() {
+  return Boolean(appConfig.oidcBffBaseUrl);
+}
+
+/** True when the app can start browser OIDC sign-in. */
+export function isOidcLoginConfigured() {
+  return isOidcClientConfigured();
 }
 
 export function isSupabaseConfigured() {

@@ -1,4 +1,5 @@
 import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from 'react-oidc-context';
 
 // project import
 import AnalyticsInit from 'components/AnalyticsInit';
@@ -8,13 +9,26 @@ import ThemeCustomization from 'themes';
 import Locales from 'components/Locales';
 import RTLLayout from 'components/RTLLayout';
 import ScrollTop from 'components/ScrollTop';
-import Customization from 'components/Customization';
 import Snackbar from 'components/@extended/Snackbar';
 import Notistack from 'components/third-party/Notistack';
 
-import { JWTProvider as AuthProvider } from 'contexts/JWTContext';
+import { oidcProviderPropsForAuthProvider } from 'config/oidcConfig';
+import { isOidcClientConfigured } from 'config/appConfig';
+import { JWTProvider } from 'contexts/JWTContext';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
+
+const jwtTree = (
+  <JWTProvider>
+    <>
+      <AnalyticsInit />
+      <Notistack>
+        <RouterProvider router={router} />
+        <Snackbar />
+      </Notistack>
+    </>
+  </JWTProvider>
+);
 
 export default function App() {
   return (
@@ -22,16 +36,7 @@ export default function App() {
       <RTLLayout>
         <Locales>
           <ScrollTop>
-            <AuthProvider>
-              <>
-                <AnalyticsInit />
-                <Notistack>
-                  <RouterProvider router={router} />
-                  <Customization />
-                  <Snackbar />
-                </Notistack>
-              </>
-            </AuthProvider>
+            {isOidcClientConfigured() ? <AuthProvider {...oidcProviderPropsForAuthProvider()}>{jwtTree}</AuthProvider> : jwtTree}
           </ScrollTop>
         </Locales>
       </RTLLayout>
