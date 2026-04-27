@@ -1,7 +1,7 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useSearchParams } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { alpha, keyframes, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
@@ -17,6 +17,20 @@ import { appConfig, isOidcLoginConfigured } from 'config/appConfig';
 import { clearOidcSigninFailedFromSession, initialShowOidcSigninFailedBanner } from 'lib/oidcPaths';
 import AuthWrapper from 'sections/auth/AuthWrapper';
 import AnimateButton from 'components/@extended/AnimateButton';
+import zetaAuthIcon from 'assets/images/auth/zeta-auth.png';
+
+const HERO_PHRASE_IDS = ['login-hero-phrase-0', 'login-hero-phrase-1', 'login-hero-phrase-2', 'login-hero-phrase-3'] as const;
+
+const heroTitleAlive = keyframes`
+  0%, 100% {
+    filter: brightness(1);
+    text-shadow: 0 2px 20px rgba(255, 255, 255, 0.18), 0 0 40px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    filter: brightness(1.1);
+    text-shadow: 0 2px 28px rgba(255, 255, 255, 0.32), 0 0 56px rgba(255, 255, 255, 0.14);
+  }
+`;
 
 // ==============================|| LOGIN — LANDING + SIGN-IN ||============================== //
 
@@ -27,35 +41,44 @@ export default function Login() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showSignInFailed, setShowSignInFailed] = useState(() => initialShowOidcSigninFailedBanner());
   const defaultPath = useDefaultPath();
-  const isNarrow = useMediaQuery(theme.breakpoints.down('sm'));
-  const logoW = isNarrow ? 120 : 150;
-  const appName = appConfig.appTitle;
+  const isBelowLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const logoW = isBelowLg ? 150 : 300;
   const supportMail = `mailto:${appConfig.supportEmail}`;
   const loginEnabled = isOidcLoginConfigured();
 
-  const hero = (
-    <Stack spacing={1.5} sx={{ py: { lg: 2 } }}>
-      <Typography
-        component="h1"
-        fontWeight={800}
-        sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', lg: '2.4rem' }, lineHeight: 1.2 }}
-      >
-        {intl.formatMessage({ id: 'login-hero-title' })}
-      </Typography>
-      <Typography
-        component="p"
-        variant="h6"
-        sx={{
-          fontWeight: 500,
-          opacity: 0.95,
-          fontSize: { xs: '1rem', sm: '1.1rem', lg: '1.2rem' },
-          maxWidth: 400,
-          lineHeight: 1.4
-        }}
-      >
-        {intl.formatMessage({ id: 'login-hero-subtitle' }, { app: appName })}
-      </Typography>
-    </Stack>
+  const heroPhraseIndex = useMemo(() => Math.floor(Math.random() * HERO_PHRASE_IDS.length), []);
+
+  const hero = useMemo(
+    () => (
+      <Stack spacing={1.75} sx={{ py: { lg: 2 } }}>
+        <Typography
+          component="h1"
+          fontWeight={800}
+          sx={{
+            fontSize: { xs: '1.85rem', sm: '2.15rem', lg: '3rem' },
+            lineHeight: 1.15,
+            letterSpacing: '-0.02em',
+            animation: `${heroTitleAlive} 5s ease-in-out infinite`
+          }}
+        >
+          {intl.formatMessage({ id: 'login-hero-title' })}
+        </Typography>
+        <Typography
+          component="p"
+          variant="body1"
+          sx={{
+            fontWeight: 400,
+            fontSize: { xs: '0.95rem', sm: '1rem', lg: '1.08rem' },
+            maxWidth: 420,
+            lineHeight: 1.5,
+            color: alpha(theme.palette.common.white, 0.72)
+          }}
+        >
+          {intl.formatMessage({ id: HERO_PHRASE_IDS[heroPhraseIndex] })}
+        </Typography>
+      </Stack>
+    ),
+    [heroPhraseIndex, intl, theme]
   );
 
   useLayoutEffect(() => {
@@ -68,10 +91,25 @@ export default function Login() {
 
   return (
     <AuthWrapper hero={loginEnabled ? hero : undefined}>
-      <Stack alignItems="center" spacing={2.5} sx={{ textAlign: 'center' }}>
-        <Box sx={{ width: '100%', maxWidth: 300 }}>
-          <Logo sx={{ width: '100%', maxWidth: logoW, height: 'auto' }} />
-        </Box>
+      <Stack alignItems="center" spacing={2.25} sx={{ textAlign: 'center' }}>
+        <Stack alignItems="center" spacing={2} sx={{ width: '100%' }}>
+          <Box sx={{ width: '100%', maxWidth: 300 }}>
+            <Logo sx={{ width: logoW, height: 'auto' }} />
+          </Box>
+          <Typography
+            component="p"
+            sx={{
+              fontSize: { xs: '0.95rem', sm: '1.05rem' },
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+              color: 'text.primary',
+              maxWidth: 340,
+              lineHeight: 1.45
+            }}
+          >
+            {intl.formatMessage({ id: 'login-brand-tagline' })}
+          </Typography>
+        </Stack>
 
         {loginEnabled ? (
           <>
@@ -88,13 +126,19 @@ export default function Login() {
                 {intl.formatMessage({ id: 'login-signin-failed' })}
               </Alert>
             ) : null}
-            <Typography component="h2" variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }}>
-              {intl.formatMessage({ id: 'login-welcome' })}
+            <Typography
+              component="h2"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                fontWeight: 400,
+                lineHeight: 1.5,
+                maxWidth: 360,
+                color: 'text.secondary'
+              }}
+            >
+              {intl.formatMessage({ id: 'login-signin-prompt' })}
             </Typography>
-            <Typography color="text.secondary" sx={{ maxWidth: 400, lineHeight: 1.6 }}>
-              {intl.formatMessage({ id: 'login-lead' })}
-            </Typography>
-            <Box sx={{ width: '100%', maxWidth: 360, pt: 1 }}>
+            <Box sx={{ width: '100%', maxWidth: 360, pt: 0.25 }}>
               <AnimateButton>
                 <Button
                   fullWidth
@@ -103,16 +147,38 @@ export default function Login() {
                   onClick={() => startOidcLogin(defaultPath)}
                   variant="outlined"
                   color="primary"
+                  startIcon={
+                    <Box
+                      aria-hidden
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        flexShrink: 0,
+                        bgcolor: 'primary.main',
+                        maskImage: `url(${zetaAuthIcon})`,
+                        WebkitMaskImage: `url(${zetaAuthIcon})`,
+                        maskRepeat: 'no-repeat',
+                        WebkitMaskRepeat: 'no-repeat',
+                        maskPosition: 'center',
+                        WebkitMaskPosition: 'center',
+                        maskSize: 'contain',
+                        WebkitMaskSize: 'contain'
+                      }}
+                    />
+                  }
                   sx={(t) => ({
                     py: 1.75,
                     fontSize: '1.05rem',
                     fontWeight: 600,
+                    color: t.palette.primary.main,
                     borderRadius: 10,
                     borderColor: t.palette.mode === 'dark' ? t.palette.divider : t.palette.grey[300],
                     bgcolor: t.palette.mode === 'dark' ? 'action.hover' : t.palette.grey[50],
                     textTransform: 'none',
+                    '& .MuiButton-startIcon': { mr: 1.25, ml: -0.25, color: 'inherit' },
                     '&:hover': {
-                      bgcolor: t.palette.mode === 'dark' ? 'action.selected' : t.palette.grey[100]
+                      bgcolor: t.palette.mode === 'dark' ? 'action.selected' : t.palette.grey[100],
+                      color: t.palette.primary.main
                     }
                   })}
                 >
@@ -120,7 +186,7 @@ export default function Login() {
                 </Button>
               </AnimateButton>
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ pt: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ pt: 0.75 }}>
               {intl.formatMessage({ id: 'login-need-help' })}{' '}
               <Link href={supportMail} color="primary" fontWeight={600} underline="hover">
                 {intl.formatMessage({ id: 'login-need-help-cta' })}

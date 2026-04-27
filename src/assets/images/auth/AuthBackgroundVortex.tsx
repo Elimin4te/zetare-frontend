@@ -7,8 +7,8 @@ import { ThemeMode } from 'config';
 
 // ==============================|| AUTH VORTEX BACKGROUND ||============================== //
 
-// Configuration constants
-const VORTEX_SIZE_FACTOR = 1.2;
+// Configuration constants — larger, faster motion reads more “alive”
+const VORTEX_SIZE_FACTOR = 1.55;
 
 const rotateVortex = keyframes`
   0% { transform: rotate(0deg); }
@@ -22,20 +22,25 @@ const rotateVortexReverse = keyframes`
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  50% { transform: translateY(-28px); }
 `;
 
 const AuthBackgroundVortex = () => {
   const theme = useTheme();
-  const isDark = theme.palette.mode === ThemeMode.DARK;
 
   const c = (color: string, o: number) => alpha(color, o);
 
   const pr = theme.palette.primary;
+  // Orange accent in preset themes (MUI `warning`); pairs with primary in the vortex.
+  const accent = theme.palette.warning;
   const primaryMain = pr.main;
   const primaryLight = pr.light;
   const primaryLighter = (pr as { lighter?: string }).lighter ?? pr.light;
   const primaryDark = pr.dark;
+  const accentMain = accent.main;
+  const accentLight = accent.light;
+  const accentDark = accent.dark;
+  const accentDarker = (accent as { darker?: string }).darker ?? accent.dark;
 
   return (
     <Box
@@ -46,7 +51,7 @@ const AuthBackgroundVortex = () => {
         overflow: 'hidden',
         pointerEvents: 'none',
         // visible stack: keep above a soft base, never z-index: -1 (hides behind parent background)
-        opacity: isDark ? 0.85 : 0.95
+        opacity: 0.75
       }}
     >
       <Box
@@ -60,16 +65,20 @@ const AuthBackgroundVortex = () => {
           background: `conic-gradient(
             from 0deg,
             ${c(primaryLighter, 0)} 0deg,
-            ${c(primaryLighter, 0.2)} 60deg,
-            ${c(primaryLight, 0.35)} 120deg,
-            ${c(primaryMain, 0.5)} 180deg,
-            ${c(primaryLight, 0.35)} 240deg,
-            ${c(primaryLighter, 0.2)} 300deg,
+            ${c(accentLight, 0.28)} 45deg,
+            ${c(primaryLighter, 0.22)} 60deg,
+            ${c(primaryLight, 0.42)} 120deg,
+            ${c(accentMain, 0.38)} 150deg,
+            ${c(primaryMain, 0.55)} 180deg,
+            ${c(accentDark, 0.32)} 210deg,
+            ${c(primaryLight, 0.4)} 240deg,
+            ${c(primaryLighter, 0.22)} 300deg,
+            ${c(accentLight, 0.2)} 330deg,
             ${c(primaryLighter, 0)} 360deg
           )`,
           borderRadius: '50%',
-          filter: `blur(${80 * VORTEX_SIZE_FACTOR}px)`,
-          animation: `${rotateVortex} 20s linear infinite`
+          filter: `blur(${72 * VORTEX_SIZE_FACTOR}px)`,
+          animation: `${rotateVortex} 14s linear infinite`
         }}
       />
       <Box
@@ -83,14 +92,17 @@ const AuthBackgroundVortex = () => {
           background: `conic-gradient(
             from 180deg,
             ${c(primaryMain, 0)} 0deg,
-            ${c(primaryMain, 0.3)} 90deg,
-            ${c(primaryDark, 0.45)} 180deg,
-            ${c(primaryMain, 0.3)} 270deg,
+            ${c(accentMain, 0.35)} 60deg,
+            ${c(primaryMain, 0.38)} 90deg,
+            ${c(primaryDark, 0.52)} 180deg,
+            ${c(accentDark, 0.4)} 220deg,
+            ${c(primaryMain, 0.36)} 270deg,
+            ${c(accentLight, 0.28)} 310deg,
             ${c(primaryMain, 0)} 360deg
           )`,
           borderRadius: '50%',
-          filter: `blur(${60 * VORTEX_SIZE_FACTOR}px)`,
-          animation: `${rotateVortexReverse} 15s linear infinite`
+          filter: `blur(${52 * VORTEX_SIZE_FACTOR}px)`,
+          animation: `${rotateVortexReverse} 11s linear infinite`
         }}
       />
       <Box
@@ -103,14 +115,16 @@ const AuthBackgroundVortex = () => {
           transform: 'translate(-50%, -50%)',
           background: `radial-gradient(
             circle,
-            ${c(primaryMain, 0.4)} 0%,
-            ${c(primaryLight, 0.25)} 30%,
-            ${c(primaryLighter, 0.15)} 60%,
+            ${c(accentMain, 0.35)} 0%,
+            ${c(primaryMain, 0.48)} 22%,
+            ${c(primaryLight, 0.3)} 38%,
+            ${c(accentLight, 0.22)} 55%,
+            ${c(primaryLighter, 0.12)} 72%,
             transparent 100%
           )`,
           borderRadius: '50%',
-          filter: `blur(${40 * VORTEX_SIZE_FACTOR}px)`,
-          animation: `${rotateVortex} 10s linear infinite, ${float} 8s ease-in-out infinite`
+          filter: `blur(${36 * VORTEX_SIZE_FACTOR}px)`,
+          animation: `${rotateVortex} 8s linear infinite, ${float} 6.5s ease-in-out infinite`
         }}
       />
       <Box
@@ -120,10 +134,10 @@ const AuthBackgroundVortex = () => {
           height: `${300 * VORTEX_SIZE_FACTOR}px`,
           top: '25%',
           right: '15%',
-          background: `radial-gradient(circle, ${c(primaryLight, 0.25)}, transparent 70%)`,
+          background: `radial-gradient(circle, ${c(accentLight, 0.32)}, ${c(primaryLight, 0.18)} 45%, transparent 70%)`,
           borderRadius: '50%',
-          filter: `blur(${50 * VORTEX_SIZE_FACTOR}px)`,
-          animation: `${float} 6s ease-in-out infinite`
+          filter: `blur(${44 * VORTEX_SIZE_FACTOR}px)`,
+          animation: `${float} 5s ease-in-out infinite`
         }}
       />
       <Box
@@ -133,10 +147,10 @@ const AuthBackgroundVortex = () => {
           height: `${250 * VORTEX_SIZE_FACTOR}px`,
           bottom: '15%',
           left: '5%',
-          background: `radial-gradient(circle, ${c(primaryDark, 0.2)}, transparent 70%)`,
+          background: `radial-gradient(circle, ${c(accentDarker, 0.26)}, ${c(primaryDark, 0.22)} 50%, transparent 72%)`,
           borderRadius: '50%',
-          filter: `blur(${45 * VORTEX_SIZE_FACTOR}px)`,
-          animation: `${float} 7s ease-in-out infinite 1s`
+          filter: `blur(${40 * VORTEX_SIZE_FACTOR}px)`,
+          animation: `${float} 5.5s ease-in-out infinite 0.8s`
         }}
       />
     </Box>
