@@ -6,6 +6,7 @@ import { SimplePaletteColorOptions } from '@mui/material/styles';
 export type PaletteThemeProps = {
   primary: SimplePaletteColorOptions;
   secondary: SimplePaletteColorOptions;
+  accent: SimplePaletteColorOptions;
   error: SimplePaletteColorOptions;
   warning: SimplePaletteColorOptions;
   info: SimplePaletteColorOptions;

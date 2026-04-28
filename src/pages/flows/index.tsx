@@ -10,6 +10,7 @@ import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { motion } from 'framer-motion';
 import { useIntl } from 'react-intl';
@@ -25,13 +26,14 @@ type FlowRow = {
   id: string;
   key: string;
   name: string;
+  description: string;
   ref_schema: string;
   route: string;
   is_active: boolean;
   icon: string | null;
 };
 
-export default function FlowsLandingPage() {
+export default function FlowsPage() {
   const theme = useTheme();
   const intl = useIntl();
   const navigate = useNavigate();
@@ -40,13 +42,15 @@ export default function FlowsLandingPage() {
   const [error, setError] = useState<unknown | null>(null);
   const [flows, setFlows] = useState<FlowRow[]>([]);
   const [query, setQuery] = useState('');
+  const [refreshSeq, setRefreshSeq] = useState(0);
 
   const fetchFlows = useCallback(async () => {
+    setRefreshSeq((s) => s + 1);
     setLoading(true);
     setError(null);
     try {
       const supabase = getSupabaseClientOrThrow();
-      const { data, error: qErr } = await supabase.schema('app').from('flows').select('id,key,name,ref_schema,route,is_active,icon');
+      const { data, error: qErr } = await supabase.schema('app').from('flows').select('id,key,name,description,ref_schema,route,is_active,icon');
       if (qErr) throw qErr;
       setFlows((data ?? []) as FlowRow[]);
     } catch (e: unknown) {
@@ -82,58 +86,59 @@ export default function FlowsLandingPage() {
   const filteredFlows = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return flows;
-    return flows.filter((f) => f.name.toLowerCase().includes(q));
+    return flows.filter((f) => `${f.name} ${f.key} ${f.description ?? ''}`.toLowerCase().includes(q));
   }, [flows, query]);
 
-  if (loading) {
-    return <BrandedLoader fullScreen={false} minHeight={360} message={intl.formatMessage({ id: 'flows-loading' })} />;
-  }
-
   return (
-    <Stack spacing={2.5} sx={{ width: '100%' }}>
-      <Stack spacing={1}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }} justifyContent="space-between">
-          <Box>
-            <Typography variant="h3">{intl.formatMessage({ id: 'flows' })}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {intl.formatMessage({ id: 'flows-subtitle' })}
-            </Typography>
-          </Box>
+    <Stack spacing={3} sx={{ width: '100%', flexGrow: 1, minHeight: 0 }}>
+        <Stack spacing={1}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }} justifyContent="space-between">
+            <Stack spacing={1}>
+              <Typography variant="h3">{intl.formatMessage({ id: 'flows' })}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {intl.formatMessage({ id: 'flows-subtitle' })}
+              </Typography>
+            </Stack>
 
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Box sx={{ flex: 1, minWidth: { sm: 320 } }}>
-              <FormControl sx={{ width: '100%' }}>
-                <OutlinedInput
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={intl.formatMessage({ id: 'flows-search-placeholder' })}
-                  startAdornment={
-                    <InputAdornment position="start" sx={{ mr: -0.5 }}>
-                      <SearchNormal1 size={16} />
-                    </InputAdornment>
-                  }
-                  sx={{
-                    bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'common.white',
-                    '& .MuiOutlinedInput-input': { p: 1.25 }
-                  }}
-                />
-              </FormControl>
-            </Box>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Box sx={{ flex: 1, minWidth: { sm: 320 } }}>
+                <FormControl sx={{ width: '100%' }}>
+                  <OutlinedInput
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={intl.formatMessage({ id: 'flows-search-placeholder' })}
+                    startAdornment={
+                      <InputAdornment position="start" sx={{ mr: -0.5 }}>
+                        <SearchNormal1 size={16} />
+                      </InputAdornment>
+                    }
+                    sx={{
+                      bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'common.white',
+                      '& .MuiOutlinedInput-input': { p: 1.25 }
+                    }}
+                  />
+                </FormControl>
+              </Box>
 
-            <Button
-              onClick={() => void fetchFlows()}
-              variant="contained"
-              color="primary"
-              startIcon={<Refresh2 variant="Bulk" />}
-              sx={{ textTransform: 'none', px: 2, py: 1.25, borderRadius: 2, whiteSpace: 'nowrap' }}
-            >
-              {intl.formatMessage({ id: 'reload' })}
-            </Button>
+              <Button
+                onClick={() => void fetchFlows()}
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                startIcon={
+                  loading ? <CircularProgress size={18} thickness={5} sx={{ color: 'common.white' }} /> : <Refresh2 variant="Bulk" />
+                }
+                sx={{ textTransform: 'none', px: 2, py: 1, borderRadius: 2, whiteSpace: 'nowrap' }}
+              >
+                {intl.formatMessage({ id: 'reload' })}
+              </Button>
+            </Stack>
           </Stack>
         </Stack>
-      </Stack>
 
-      {error ? (
+      {loading ? (
+        <BrandedLoader fullScreen={false} minHeight={360} message={intl.formatMessage({ id: 'flows-loading' })} />
+      ) : error ? (
         <FlowsStateMessage
           icon="Danger"
           title={intl.formatMessage({ id: 'flows-error-title' })}
@@ -156,47 +161,74 @@ export default function FlowsLandingPage() {
           body={intl.formatMessage({ id: 'flows-no-matches-body' })}
         />
       ) : (
-        <motion.div variants={containerVariants} initial="hidden" animate="show">
+        <motion.div key={refreshSeq} variants={containerVariants} initial="hidden" animate="show">
           <Grid container spacing={2}>
             {filteredFlows.map((flow) => (
-              <Grid key={flow.id} item xs={12} sm={6} md={4} lg={3}>
+              <Grid key={flow.id} item xs={12} sm={6} lg={4}>
                 <motion.div variants={itemVariants}>
                   <Box
+                    component={motion.div}
+                    initial="rest"
+                    animate="rest"
+                    whileHover="hover"
+                    whileTap={{ scale: 0.99 }}
+                    variants={{
+                      rest: { y: 0 },
+                      hover: { y: -2 }
+                    }}
                     sx={{
                       cursor: 'pointer',
                       border: `1px solid ${theme.palette.divider}`,
                       borderRadius: 1.5,
                       bgcolor: theme.palette.background.paper,
-                      p: 2.25,
+                      p: 2,
+                      minHeight: 92,
+                      display: 'flex',
+                      alignItems: 'center',
                       transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+                      borderLeft: `3.5px solid ${theme.palette.primary.main}`,
                       '&:hover': {
-                        transform: 'translateY(-2px)',
                         boxShadow: theme.customShadows.z1,
-                        borderColor: theme.palette.primary.light
+                        borderColor: theme.palette.primary.light,
+                        borderWidth: 1.5
                       }
                     }}
                     onClick={() => navigate(flow.route)}
                   >
-                    <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
                       <Box
+                        component={motion.div}
+                        variants={{
+                          rest: { rotate: 0, scale: 1 },
+                          hover: { rotate: -4, scale: 1.08, transition: { type: 'spring', stiffness: 260, damping: 18 } }
+                        }}
                         sx={{
-                          width: 44,
-                          height: 44,
+                          minWidth: 52,
+                          minHeight: 52,
                           display: 'grid',
                           placeItems: 'center',
-                          borderRadius: 1.5,
-                          bgcolor: theme.palette.mode === 'dark' ? 'background.default' : 'secondary.100',
+                          borderRadius: 2,
+                          bgcolor: theme.palette.background.default,
                           color: theme.palette.primary.main
                         }}
                       >
                         <IconByName name={flow.icon} size={26} variant="Bulk" aria-label={flow.icon ?? undefined} />
                       </Box>
-                      <Stack spacing={0.25} sx={{ minWidth: 0 }}>
+                      <Stack spacing={0.5} sx={{ minWidth: 0 }}>
                         <Typography variant="subtitle1" sx={{ lineHeight: 1.2 }} noWrap>
                           {flow.name}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          {flow.key}
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            lineHeight: 1.65,
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere',
+                            wordBreak: 'break-word'
+                          }}
+                        >
+                          {flow.description}
                         </Typography>
                       </Stack>
                     </Stack>

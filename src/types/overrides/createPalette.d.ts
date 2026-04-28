@@ -47,4 +47,14 @@ declare module '@mui/material/styles' {
     A700?: string;
     A800?: string;
   }
+
+  interface Palette {
+    /** Brand accent color (e.g. highlights, subtle background accents). */
+    accent: PaletteColor;
+  }
+
+  interface PaletteOptions {
+    /** Brand accent color (e.g. highlights, subtle background accents). */
+    accent?: SimplePaletteColorOptions;
+  }
 }
