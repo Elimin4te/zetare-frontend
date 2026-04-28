@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -177,6 +177,7 @@ export default function FlowsPage() {
                       hover: { y: -2 }
                     }}
                     sx={{
+                      overflow: 'visible',
                       cursor: 'pointer',
                       border: `1px solid ${theme.palette.divider}`,
                       borderRadius: 1.5,
@@ -197,22 +198,53 @@ export default function FlowsPage() {
                   >
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
                       <Box
-                        component={motion.div}
-                        variants={{
-                          rest: { rotate: 0, scale: 1 },
-                          hover: { rotate: -4, scale: 1.08, transition: { type: 'spring', stiffness: 260, damping: 18 } }
-                        }}
                         sx={{
-                          minWidth: 52,
-                          minHeight: 52,
-                          display: 'grid',
-                          placeItems: 'center',
-                          borderRadius: 2,
-                          bgcolor: theme.palette.background.default,
-                          color: theme.palette.primary.main
+                          position: 'relative',
+                          width: 52,
+                          height: 52,
+                          flexShrink: 0,
+                          overflow: 'visible'
                         }}
                       >
-                        <IconByName name={flow.icon} size={26} variant="Bulk" aria-label={flow.icon ?? undefined} />
+                        <Box
+                          component={motion.span}
+                          aria-hidden
+                          animate={{
+                            scale: [1, 1.35],
+                            opacity: [0.16, 0.4, 0]
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'easeOut'
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            margin: 'auto',
+                            width: 52,
+                            height: 52,
+                            borderRadius: 12,
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
+                            boxSizing: 'border-box',
+                            pointerEvents: 'none'
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'relative',
+                            zIndex: 1,
+                            minWidth: 52,
+                            minHeight: 52,
+                            display: 'grid',
+                            placeItems: 'center',
+                            borderRadius: 12,
+                            bgcolor: theme.palette.background.default,
+                            color: theme.palette.primary.main
+                          }}
+                        >
+                          <IconByName name={flow.icon} size={26} variant="Bulk" aria-label={flow.icon ?? undefined} />
+                        </Box>
                       </Box>
                       <Stack spacing={0.5} sx={{ minWidth: 0 }}>
                         <Typography variant="subtitle1" sx={{ lineHeight: 1.2 }} noWrap>
