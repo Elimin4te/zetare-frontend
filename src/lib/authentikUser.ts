@@ -29,6 +29,15 @@ export function userProfileFromAccessToken(token: string): UserProfile {
     c.permissions ?? c['urn:zetare:permissions'] ?? c['permissions']
   );
 
+  const zetaCollectorRaw = c['zeta_collector'];
+  const zetaCollector =
+    zetaCollectorRaw && typeof zetaCollectorRaw === 'object'
+      ? {
+          flows: normalizeStringArray((zetaCollectorRaw as any).flows),
+          permissions: normalizeStringArray((zetaCollectorRaw as any).permissions)
+        }
+      : undefined;
+
   const email = typeof c.email === 'string' ? c.email : null;
   const fullName = [c.given_name, c.family_name].filter(Boolean).join(' ').trim();
   const name = (fullName || (c.name as string) || c.preferred_username) as string | undefined;
@@ -43,13 +52,22 @@ export function userProfileFromAccessToken(token: string): UserProfile {
     image: c.picture,
     avatar: c.picture,
     groups,
-    permissions: permissions.length ? permissions : undefined
+    permissions: permissions.length ? permissions : undefined,
+    zetaCollector
   };
 }
 
 function normalizeStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.map((v) => String(v)).filter(Boolean);
+  }
+  // Support Set-like iterables (e.g. claim serialized strangely by upstream mapping).
+  if (value && typeof value === 'object' && (value as any)[Symbol.iterator]) {
+    try {
+      return Array.from(value as any, (v: any) => String(v)).filter(Boolean);
+    } catch {
+      // ignore
+    }
   }
   if (typeof value === 'string' && value) {
     return [value];

@@ -16,6 +16,10 @@ export default function AuthGuard({ children }: GuardProps) {
 
   useEffect(() => {
     if (!isLoggedIn) {
+      // Avoid loops if we’re already at the login screen.
+      if (location.pathname === '/login') {
+        return;
+      }
       navigate('/login', {
         state: {
           from: location.pathname
@@ -23,7 +27,7 @@ export default function AuthGuard({ children }: GuardProps) {
         replace: true
       });
     }
-  }, [isLoggedIn, navigate, location]);
+  }, [isLoggedIn, navigate, location.pathname]);
 
   return children;
 }

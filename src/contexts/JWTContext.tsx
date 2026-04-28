@@ -65,7 +65,7 @@ const OidcModeProvider = ({ children }: { children: React.ReactElement }) => {
     }
   }, [isLoading, oidcUser, removeUser]);
 
-  const startOidcLogin = (redirectTo = '/landing') => {
+  const startOidcLogin = (redirectTo = '/') => {
     const r = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
     const st: OidcReturnState = { returnPath: r };
     void signinRedirect({ state: st });

@@ -10,8 +10,8 @@ import { getAppTitle } from 'constants/branding';
  * Maps route paths to their corresponding internationalized title keys
  */
 const routeTitleMap: Record<string, string> = {
-  '/': 'page-title-landing',
-  '/landing': 'page-title-landing',
+  '/': 'page-title-flows',
+  '/landing': 'page-title-flows',
   '/login': 'page-title-login'
 };
 

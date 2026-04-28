@@ -30,7 +30,7 @@ function getOidcUserManagerSettings(): UserManagerSettings {
     client_id: appConfig.oidcClientId,
     redirect_uri: appConfig.oidcRedirectUri,
     response_type: 'code',
-    scope: sc && sc.trim() !== '' ? sc : 'openid email profile',
+    scope: sc && sc.trim() !== '' ? sc : 'openid email profile zeta_collector',
     // Browser cannot refresh against a confidential client without a secret; BFF will own refresh in a follow-up.
     automaticSilentRenew: !isOidcBffConfigured()
   };

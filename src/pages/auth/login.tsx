@@ -103,7 +103,7 @@ export default function Login() {
               fontWeight: 600,
               letterSpacing: '0.02em',
               color: 'text.primary',
-              maxWidth: 340,
+              maxWidth: 380,
               lineHeight: 1.45
             }}
           >

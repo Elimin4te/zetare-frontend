@@ -2,29 +2,29 @@
 import { FormattedMessage } from 'react-intl';
 
 // assets
-import { Home2 } from 'iconsax-react';
+import { Briefcase } from 'iconsax-react';
 
 // type
 import { NavItemType } from 'types/menu';
 
 // icons
 const icons = {
-  landing: Home2
+  landing: Briefcase
 };
 
 // ==============================|| MENU ITEMS - LANDING ||============================== //
 
 const landing: NavItemType = {
   id: 'group-landing',
-  title: <FormattedMessage id="landing" />,
+  title: <FormattedMessage id="flows" />,
   icon: icons.landing,
   type: 'group',
   children: [
     {
       id: 'landing',
-      title: <FormattedMessage id="landing" />,
+      title: <FormattedMessage id="flows" />,
       type: 'item',
-      url: '/landing',
+      url: '/',
       icon: icons.landing,
       breadcrumbs: false
     }

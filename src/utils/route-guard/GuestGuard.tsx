@@ -18,12 +18,18 @@ export default function GuestGuard({ children }: GuardProps) {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate(location?.state?.from ? location?.state?.from : defaultPath, {
+      const target = (location.state as any)?.from ? (location.state as any).from : defaultPath;
+      // Avoid infinite loops when a guard navigates to the same location repeatedly.
+      if (typeof target === 'string' && target === location.pathname) {
+        return;
+      }
+      navigate(target, {
         state: { from: '' },
         replace: true
       });
     }
-  }, [isLoggedIn, defaultPath, navigate, location]);
+    // We only depend on stable pieces of location to avoid re-running on object identity changes.
+  }, [isLoggedIn, defaultPath, navigate, location.pathname, (location.state as any)?.from]);
 
   return children;
 }

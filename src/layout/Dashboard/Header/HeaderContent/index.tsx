@@ -10,6 +10,7 @@ import Profile from './Profile';
 import Localization from './Localization';
 import ThemeModeToggle from './ThemeModeToggle';
 import Notification from './Notification';
+import OnlineStatus from './OnlineStatus';
 
 import { MenuOrientation } from 'config';
 import useConfig from 'hooks/useConfig';
@@ -31,6 +32,7 @@ export default function HeaderContent() {
       <Box sx={{ ml: 'auto', display: 'flex' }}>
         {localization}
         <ThemeModeToggle />
+        <OnlineStatus />
         <Notification />
         <Profile />
       </Box>

@@ -14,6 +14,7 @@ import Search from './Search';
 import Profile from './Profile';
 import Localization from './Localization';
 import ThemeModeToggle from './ThemeModeToggle';
+import OnlineStatus from './OnlineStatus';
 import IconButton from 'components/@extended/IconButton';
 import Transitions from 'components/@extended/Transitions';
 import { ThemeMode } from 'config';
@@ -89,6 +90,7 @@ export default function MobileSection() {
                     <Search />
                     <Localization />
                     <ThemeModeToggle />
+                    <OnlineStatus />
                     <Profile />
                   </Toolbar>
                 </AppBar>

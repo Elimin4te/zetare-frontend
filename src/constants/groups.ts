@@ -2,7 +2,7 @@
  * User menu / home routing. Match JWT `groups` from your IdP to config here as you add roles.
  */
 
-export const LANDING_PATH = '/landing';
+export const LANDING_PATH = '/';
 
 export const SECTION_LANDING = 'landing';
 

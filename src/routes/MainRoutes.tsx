@@ -1,6 +1,7 @@
 // project-imports
 import DashboardLayout from 'layout/Dashboard';
 import DefaultRouteHandler from 'components/DefaultRouteHandler';
+import { Navigate } from 'react-router-dom';
 
 // ==============================|| MAIN ROUTES ||============================== //
 
@@ -17,7 +18,7 @@ const MainRoutes = {
         },
         {
           path: 'landing',
-          element: <DefaultRouteHandler />
+          element: <Navigate to="/" replace />
         }
       ]
     }

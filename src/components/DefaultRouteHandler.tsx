@@ -3,8 +3,8 @@ import { lazy } from 'react';
 // project-imports
 import Loadable from 'components/Loadable';
 
-const DashboardLanding = Loadable(lazy(() => import('pages/dashboard/landing')));
+const FlowsLanding = Loadable(lazy(() => import('pages/flows')));
 
 export default function DefaultRouteHandler() {
-  return <DashboardLanding />;
+  return <FlowsLanding />;
 }

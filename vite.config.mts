@@ -69,6 +69,14 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+          // Ensure SPA navigations (including OIDC callback routes) always fall back to `index.html`.
+          navigateFallback: 'index.html',
+          navigateFallbackAllowlist: [
+            // allow all in-app navigations; explicit include for auth callback
+            /^\/$/,
+            /^\/auth\/callback(?:\/)?$/,
+            /^\/(?!api\/).*/
+          ],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/api\./i,

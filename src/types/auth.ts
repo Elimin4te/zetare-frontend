@@ -19,6 +19,14 @@ export type UserProfile = {
   image?: string;
   /** RBAC permissions: module:submodule:permission:scope */
   permissions?: string[];
+  /**
+   * Custom claim for collector app capabilities.
+   * Comes from access token claim: `zeta_collector`.
+   */
+  zetaCollector?: {
+    flows?: string[];
+    permissions?: string[];
+  };
   id?: string;
   name?: string;
   role?: string;
