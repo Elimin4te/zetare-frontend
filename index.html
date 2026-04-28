@@ -21,6 +21,31 @@
 
     <!-- ResizeObserver polyfill for some Safari / embedded WebKit environments -->
     <script src="https://cdn.jsdelivr.net/npm/resize-observer-polyfill@1.5.1/dist/ResizeObserver.min.js"></script>
+
+    <!--
+      Prevent a white flash on hard reloads (OIDC redirects, logout reloads) by painting the initial
+      background to the *persisted* theme mode before React/MUI mount.
+    -->
+    <script>
+      (function () {
+        try {
+          var key = 'able-pro-material-react-ts-config';
+          var raw = window.localStorage ? window.localStorage.getItem(key) : null;
+          var cfg = raw ? JSON.parse(raw) : null;
+          var mode = cfg && cfg.mode ? String(cfg.mode).toLowerCase() : 'light';
+          var isDark = mode === 'dark';
+          // Keep these aligned with your theme’s perceived backgrounds (fallback-safe).
+          var bg = isDark ? '#131920' : '#f8f9fa';
+          var html = document.documentElement;
+          html.style.backgroundColor = bg;
+          if (document.body) document.body.style.backgroundColor = bg;
+          // Helpful hook if you later want CSS to react pre-mount.
+          html.setAttribute('data-preferred-mode', isDark ? 'dark' : 'light');
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
   </head>
   <body font-feature-settings="salt">
     <noscript>You need to enable JavaScript to run this app.</noscript>

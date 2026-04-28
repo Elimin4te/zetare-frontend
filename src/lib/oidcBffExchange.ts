@@ -103,8 +103,7 @@ async function signInWithOidcBffImpl(): Promise<void> {
   await um.storeUser(user);
   await um.events.load(user);
 
-  const to = returnPathFromOidcState(user.state);
-  window.location.replace(oidcAppUrl(to));
+  // Navigation is handled by the SPA `/auth/callback` route after the user is stored.
 }
 
 /**

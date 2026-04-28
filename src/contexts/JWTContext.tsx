@@ -6,7 +6,7 @@ import { identifyUser, resetAnalytics, trackUserLogin, trackUserLogout } from 'a
 import Loader from 'components/Loader';
 import { isOidcClientConfigured } from 'config/appConfig';
 import { isTokenExpired, setStoredAccessToken, userProfileFromAccessToken } from 'lib/authentikUser';
-import { OidcReturnState, oidcAppUrl } from 'lib/oidcPaths';
+import { OidcReturnState, withOidcAppPath } from 'lib/oidcPaths';
 import { JWTContextType, UserProfile } from 'types/auth';
 
 const JWTContext = createContext<JWTContextType | null>(null);
@@ -71,7 +71,7 @@ const OidcModeProvider = ({ children }: { children: React.ReactElement }) => {
     void signinRedirect({ state: st });
   };
 
-  /** Clears this app’s OIDC session only (UserManager storage); does not call Authentik end-session / SSO logout. */
+  /** Clears this app���s OIDC session only (UserManager storage); does not call Authentik end-session / SSO logout. */
   const logout = () => {
     trackUserLogout();
     resetAnalytics();
@@ -79,7 +79,10 @@ const OidcModeProvider = ({ children }: { children: React.ReactElement }) => {
     lastTrackedToken.current = null;
     void (async () => {
       await removeUser();
-      window.location.replace(oidcAppUrl('/login'));
+      // SPA navigation (avoid hard reload + white first paint).
+      const to = withOidcAppPath('/login');
+      window.history.replaceState({}, '', to);
+      window.dispatchEvent(new PopStateEvent('popstate'));
     })();
   };
 
@@ -110,3 +113,4 @@ export const JWTProvider = ({ children }: { children: React.ReactElement }) => {
 };
 
 export default JWTContext;
+

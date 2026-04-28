@@ -53,6 +53,7 @@ import ToggleButton from './ToggleButton';
 import Tooltip from './Tooltip';
 import TreeItem from './TreeItem';
 import Typography from './Typography';
+import UseMediaQuery from './UseMediaQuery';
 
 // ==============================|| OVERRIDES - MAIN ||============================== //
 
@@ -105,6 +106,7 @@ export default function ComponentsOverrides(theme: Theme) {
     ToggleButton(theme),
     Tooltip(theme),
     TreeItem(),
-    Typography()
+    Typography(),
+    UseMediaQuery(theme)
   );
 }

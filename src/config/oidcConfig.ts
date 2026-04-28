@@ -3,7 +3,7 @@ import { UserManager } from 'oidc-client-ts';
 import type { AuthProviderUserManagerProps } from 'react-oidc-context';
 
 import { appConfig, isOidcBffConfigured } from 'config/appConfig';
-import { hasOidcCallbackParamsInUrl, isOauthCallbackPathname, logOidcSigninFailure, oidcAppUrl, returnPathFromOidcState } from 'lib/oidcPaths';
+import { hasOidcCallbackParamsInUrl, isOauthCallbackPathname, logOidcSigninFailure } from 'lib/oidcPaths';
 
 const e = import.meta.env as { VITE_OIDC_SCOPE?: string };
 
@@ -16,8 +16,8 @@ export const onSigninCallback: NonNullable<AuthProviderUserManagerProps['onSigni
     });
     return;
   }
-  const to = returnPathFromOidcState(user.state);
-  window.location.replace(oidcAppUrl(to));
+  // Post-login navigation runs in `OAuthCallback` via `react-router` `navigate` to avoid a full
+  // `window.location.replace` reload and the white flash while the app boots again.
 };
 
 function getOidcUserManagerSettings(): UserManagerSettings {

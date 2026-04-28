@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth as useOidcAuth } from 'react-oidc-context';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,9 +10,16 @@ import Typography from '@mui/material/Typography';
 
 // project import
 import { isOidcBffConfigured } from 'config/appConfig';
-import Loader from 'components/Loader';
+import BrandedLoader from 'components/BrandedLoader';
 import { signInWithOidcBffDeduplicated } from 'lib/oidcBffExchange';
-import { formatOidcErrorForDisplay, hasOidcCallbackParamsInUrl, logOidcSigninFailure, oidcErrorFriendlyHint, withOidcAppPath } from 'lib/oidcPaths';
+import {
+  formatOidcErrorForDisplay,
+  hasOidcCallbackParamsInUrl,
+  logOidcSigninFailure,
+  oidcErrorFriendlyHint,
+  returnPathFromOidcState,
+  withOidcAppPath
+} from 'lib/oidcPaths';
 
 function formatBffError(err: unknown): string {
   if (err instanceof Error) {
@@ -27,9 +34,11 @@ function formatBffError(err: unknown): string {
  */
 export default function OAuthCallback() {
   const { isLoading, error, isAuthenticated, user } = useOidcAuth();
+  const navigate = useNavigate();
   const isBffRoute = isOidcBffConfigured() && hasOidcCallbackParamsInUrl();
   const [bffError, setBffError] = useState<unknown | null>(null);
   const [loggedError, setLoggedError] = useState<unknown | null>(null);
+  const didNavigate = useRef(false);
 
   useEffect(() => {
     if (!isBffRoute) {
@@ -51,6 +60,21 @@ export default function OAuthCallback() {
     setLoggedError(error);
     logOidcSigninFailure({ reason: 'useAuth() error (in-browser OIDC; unset VITE_OIDC_BFF_URL to debug)', error });
   }, [error, loggedError]);
+
+  // Avoid full page reload navigation (reduces white flashes). We route inside the SPA after auth is ready.
+  useEffect(() => {
+    if (didNavigate.current) {
+      return;
+    }
+    if (error != null || bffError != null) {
+      return;
+    }
+    if (!isAuthenticated || !user?.access_token) {
+      return;
+    }
+    didNavigate.current = true;
+    navigate(returnPathFromOidcState(user.state));
+  }, [bffError, error, isAuthenticated, navigate, user]);
 
   if (isBffRoute) {
     if (bffError) {
@@ -82,7 +106,7 @@ export default function OAuthCallback() {
           <Typography color="text.secondary" variant="body2">
             Completing sign-in…
           </Typography>
-          <Loader />
+          <BrandedLoader />
         </Stack>
       </Box>
     );
@@ -91,7 +115,7 @@ export default function OAuthCallback() {
   if (isLoading) {
     return (
       <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        <Loader />
+        <BrandedLoader />
       </Box>
     );
   }
@@ -132,7 +156,7 @@ export default function OAuthCallback() {
       <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
         <Stack spacing={1} alignItems="center">
           <Typography variant="body1">Signed in. Redirecting…</Typography>
-          <Loader />
+          <BrandedLoader />
         </Stack>
       </Box>
     );
@@ -165,7 +189,7 @@ export default function OAuthCallback() {
         <Stack spacing={2}>
           <Alert severity="warning">Sign-in did not finish. Check the browser console for [OIDC] lines. If you use a BFF, set `VITE_OIDC_BFF_URL`.</Alert>
           <Typography variant="body2" color="text.secondary">
-            isAuthenticated: {String(isAuthenticated)} · has user: {String(!!user)}
+            isAuthenticated: {String(isAuthenticated)} -� has user: {String(!!user)}
           </Typography>
           <Button component={Link} to={withOidcAppPath('/login')} variant="outlined">
             Back to sign-in
@@ -175,3 +199,4 @@ export default function OAuthCallback() {
     </Box>
   );
 }
+
