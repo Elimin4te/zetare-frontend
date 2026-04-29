@@ -85,6 +85,21 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
+/**
+ * True when there is no token, it cannot be decoded, or it is expired / within `skewSeconds` of
+ * expiry (proactive refresh and clock skew).
+ */
+export function shouldRefreshAccessToken(token: string | null, skewSeconds = 90): boolean {
+  if (!token) return true;
+  try {
+    const decoded: JwtPayload = jwtDecode(token);
+    if (typeof decoded.exp !== 'number') return true;
+    return decoded.exp <= Date.now() / 1000 + skewSeconds;
+  } catch {
+    return true;
+  }
+}
+
 export const accessTokenStorageKey = 'access_token';
 export const oidcRefreshTokenStorageKey = 'oidc_refresh_token';
 

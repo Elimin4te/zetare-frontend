@@ -24,11 +24,10 @@ import { Refresh2, SearchNormal1 } from 'iconsax-react';
 
 type FlowRow = {
   id: string;
-  key: string;
+  flow_key: string;
   name: string;
   description: string;
   ref_schema: string;
-  route: string;
   is_active: boolean;
   icon: string | null;
 };
@@ -50,7 +49,7 @@ export default function FlowsPage() {
     setError(null);
     try {
       const supabase = getSupabaseClientOrThrow();
-      const { data, error: qErr } = await supabase.schema('app').from('flows').select('id,key,name,description,ref_schema,route,is_active,icon');
+      const { data, error: qErr } = await supabase.schema('app').from('flows').select('id,flow_key,name,description,ref_schema,is_active,icon');
       if (qErr) throw qErr;
       setFlows((data ?? []) as FlowRow[]);
     } catch (e: unknown) {
@@ -86,7 +85,7 @@ export default function FlowsPage() {
   const filteredFlows = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return flows;
-    return flows.filter((f) => `${f.name} ${f.key} ${f.description ?? ''}`.toLowerCase().includes(q));
+    return flows.filter((f) => `${f.name} ${f.flow_key} ${f.description ?? ''}`.toLowerCase().includes(q));
   }, [flows, query]);
 
   return (
@@ -194,7 +193,7 @@ export default function FlowsPage() {
                         borderWidth: 1.5
                       }
                     }}
-                    onClick={() => navigate(flow.route)}
+                    onClick={() => navigate(`/flows/${flow.flow_key}`)}
                   >
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
                       <Box

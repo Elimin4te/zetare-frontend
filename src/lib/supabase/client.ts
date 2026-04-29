@@ -1,10 +1,18 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { appConfig } from 'config/appConfig';
+import { getAccessTokenForApi } from 'lib/accessTokenForApi';
 
 let _client: SupabaseClient | null = null;
 
-/** Lazily create the browser Supabase client. Returns null if URL/anon key are not configured. */
+/**
+ * Browser Supabase client. Passes the Authentik (OIDC) access token as `Authorization: Bearer`
+ * for PostgREST/Storage/Edge so RLS and `auth.jwt()` see the real user JWT. When there is no
+ * stored token, the client falls back to the anon key for the Bearer (see `fetchWithAuth` in
+ * supabase-js). `accessToken` replaces built-in Supabase Auth for this client — do not use
+ * `supabase.auth.*` on this instance. The token callback refreshes via OIDC silent renew when
+ * the JWT is missing, expired, or close to expiry, then falls back to login if renew fails.
+ */
 export function getSupabaseClient(): SupabaseClient | null {
   const url = appConfig.supabaseUrl;
   const key = appConfig.supabaseAnonKey;
@@ -13,11 +21,7 @@ export function getSupabaseClient(): SupabaseClient | null {
   }
   if (!_client) {
     _client = createClient(url, key, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-      }
+      accessToken: async () => getAccessTokenForApi()
     });
   }
   return _client;

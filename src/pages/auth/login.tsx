@@ -149,25 +149,15 @@ export default function Login() {
                   color="primary"
                   startIcon={
                     <Box
+                      component="img"
+                      src={zetaAuthIcon}
+                      alt=""
                       aria-hidden
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        flexShrink: 0,
-                        bgcolor: 'primary.main',
-                        maskImage: `url(${zetaAuthIcon})`,
-                        WebkitMaskImage: `url(${zetaAuthIcon})`,
-                        maskRepeat: 'no-repeat',
-                        WebkitMaskRepeat: 'no-repeat',
-                        maskPosition: 'center',
-                        WebkitMaskPosition: 'center',
-                        maskSize: 'contain',
-                        WebkitMaskSize: 'contain'
-                      }}
+                      sx={{ width: 36, height: 36, flexShrink: 0, display: 'block' }}
                     />
                   }
                   sx={(t) => ({
-                    py: 1.75,
+                    py: 1.35,
                     fontSize: '1.05rem',
                     fontWeight: 600,
                     color: t.palette.primary.main,
